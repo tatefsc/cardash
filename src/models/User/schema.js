@@ -6,10 +6,18 @@ type User {
   lastName: String
   email: String
   vehicles: [Vehicle]
+  displayName: String
+}
+
+type ProfitableUser {
+  user: User!
+  spend: Int!
 }
 
 type Query {
   users: [User]
+  user(id: Int!): User
+  profitableUsers(top: Int = 5): [ProfitableUser]
 }
 
 type Mutation {

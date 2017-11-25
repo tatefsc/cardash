@@ -1,18 +1,41 @@
 import data from './data'
 
+const hydrate = (modelName, data) => {
+  const model = require(`./models/${modelName}/model`).default;
+  return new model(data);
+}
+
 class Database {
   constructor() {
     this.data = data
   }
 
+  getById(modelName, id) {
+    const m = this.data[modelName].find(x => x.id === id);
+    return hydrate(modelName, m);
+  }
+
   get(modelName) {
-    const model = require(`./models/${modelName}/model`).default
-    return this.data[modelName].map(m => new model(m))
+    return this.data[modelName].map(m => hydrate(modelName, m))
   }
 
   set(modelName, datum) {
-    // You should write this method
-    // and use it for inserts and updates
+    const models = this.data[modelName];
+    const { id } = datum;
+    let model = models.find(model => model.id == id);
+    // create
+    if (!model) {
+      const lastRecord = models[models.length - 1]
+      const lastId = lastRecord ? lastRecord.id : 0;
+      model = Object.assign({}, datum, { id: lastId + 1 });
+      this.data[modelName] = [...models, model];
+    // update
+    } else {
+      // TODO: This is the only mutation of underlying data
+      // Don't allow id overwrite
+      Object.assign(model, datum, { id });
+    }
+    return hydrate(modelName, model);
   }
 
   delete(modelName, datum) {
